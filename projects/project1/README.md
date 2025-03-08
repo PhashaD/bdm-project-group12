@@ -1,0 +1,91 @@
+Project 1 Analyzing New York City Taxi Data
+
+![TartuLogo](/images/logo_ut_0.png)
+
+Project [Big Data](https://courses.cs.ut.ee/2025/bdm/spring/Main/HomePage) is provided by [University of Tartu](https://courses.cs.ut.ee/).
+
+Students: Alejandro Ballesteros Perez,  Phasha Davrishev. Roman Krutsko. Nika Mgaloblishvili
+
+## License
+This project is licensed under the [Apache License 2.0](LICENSE).
+
+## Introduction  
+
+This report analyzes taxi trip data in New York City using a sample dataset provided on Moodle. The dataset is derived from a larger dataset available at [this link](http://www.andresmh.com/nyctaxitrips/). Each row in the dataset represents a single taxi ride, containing attributes such as:  
+
+- A unique identifier for the taxi (hashed license number)  
+- Pickup and drop-off locations (longitude/latitude)  
+- Pickup and drop-off timestamps  
+
+Additionally, a `.geojson` file is included to provide the geographical boundaries of NYC boroughs, which is essential for analyzing borough-based trips.  
+
+## Objectives  
+
+This report focuses on several key metrics related to taxi utilization and trip patterns:  
+
+1. **Utilization** – The fraction of time a cab is occupied by passengers.  
+2. **Average Wait Time for Next Fare** – The time between a trip’s drop-off and the next trip’s pickup, categorized by drop-off borough.  
+3. **Intra-Borough Trips** – The number of trips that both started and ended within the same borough.  
+4. **Cross-Borough Trips** – The number of trips that started in one borough and ended in another.  
+
+The dataset is processed using Apache Spark to efficiently handle large-scale data operations. The analysis helps uncover key insights about NYC taxi trip patterns, including the most frequent borough-to-borough travel routes.  
+
+
+## Queries 
+
+### Query 1 | Utilization
+
+This query calculates each taxi’s utilization rate based on trip data. First, it identifies how much time each taxi spends idle by comparing each trip’s pickup time to the previous trip’s dropoff time (using a window function grouped by medallion). Any idle gap longer than four hours resets to zero (treated as a new session). The code then sums each taxi’s total busy time (duration) and idle time to compute:
+
+Each taxi’s utilization rate is computed as:
+```bash
+utilization_rate = busy_time_sum \ (text busy_time_sum + idle_time_sum)
+```
+
+busy_time_sum: Total trip duration across all trips for a given taxi.
+idle_time_sum: Total idle time below the 4-hour threshold.
+
+#### Data
+
+![TaxiUtilizationRate](/images/project1/taxi_utlization_rate.png)
+
+#### Observations and Insights
+
+Rising Utilization: There is a very small number of taxis whos utlization rate goes above 60% percent. Utilization rate average is around 30 to 40%.
+
+### Query 2 - Average Wait Time for Next Fare
+#### Data
+#### Observations and Insights
+
+### Query 3 - Intra-Borough Trips
+#### Data
+#### Observations and Insights
+
+### Query 4 - Cross-Borough Trips
+
+The dataset consists of a total of 99,549 trips. Of these, 12,120 are cross-borough trips—meaning the pickup borough is different from the dropoff borough.
+
+1. **Filtering Cross-Borough Trips**  
+   The first query filters the dataset to include only those trips where `pickup_borough != dropoff_borough`. It then counts these filtered rows to determine the total number of cross-borough trips (12,120).
+
+2. **Breakdown by Borough Pair**  
+   Next, the second query groups the cross-borough trips by both `pickup_borough` and `dropoff_borough`, then counts these groups. This breakdown helps us see which specific borough-to-borough pairings have the highest number of trips.
+
+#### Data
+
+![DiffBoroughsHeatmap](/images/project1/diff_bug_heatmap.png)
+
+#### Observations and Insights
+
+Approximately 90% of the trips were taken with the source and detination being in the same borough
+
+
+## Conclusion
+
+1. Driver utilization varies significantly, however it can be seen that the most common utlization rate hovers around 30% - 40%
+2. Most trips are not cross-boroughs, however trips Between Manhattan and Queens are the most taken cross-borough.
+
+
+
+## License
+This project is licensed under the [Apache License 2.0](LICENSE).
