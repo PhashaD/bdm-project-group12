@@ -58,8 +58,15 @@ Rising Utilization: There is a very small number of taxis whos utlization rate g
 #### Observations and Insights
 
 ### Query 3 - Intra-Borough Trips
+
+From a dataset of 99,549 NYC taxi trips, we filtered for trips that both started and ended within the same borough. We counted these intra-borough trips. The resulting count is 87,477.
+
 #### Data
+![Intra-Borough Trips](/images/project1/intra-borough-trips.png)
+
 #### Observations and Insights
+
+After analyzing intra-borough taxi trips within New York City, Manhattan is the most popular borough for trips that are within the same borough.
 
 ### Query 4 - Cross-Borough Trips
 
