@@ -1,6 +1,6 @@
 Project 1 Analyzing New York City Taxi Data
 
-![TartuLogo](/images/logo_ut_0.png)
+![TartuLogo](../../images/logo_ut_0.png)
 
 Project [Big Data](https://courses.cs.ut.ee/2025/bdm/spring/Main/HomePage) is provided by [University of Tartu](https://courses.cs.ut.ee/).
 
@@ -47,7 +47,7 @@ idle_time_sum: Total idle time below the 4-hour threshold.
 
 #### Data
 
-![TaxiUtilizationRate](/images/project1/taxi_utlization_rate.png)
+![TaxiUtilizationRate](../../images/project1/taxi_utlization_rate.png)
 
 #### Observations and Insights
 
@@ -91,7 +91,7 @@ same_borough_trips_df = filtered_taxi_df.filter(col("pickup_borough") == col("dr
 ```
 
 #### Data
-![Intra-Borough Trips](/images/project1/intra-borough-trips.png)
+![Intra-Borough Trips](../../images/project1/intra-borough-trips.png)
 
 #### Observations and Insights
 
@@ -109,7 +109,7 @@ The dataset consists of a total of 99,549 trips. Of these, 12,120 are cross-boro
 
 #### Data
 
-![DiffBoroughsHeatmap](/images/project1/diff_bug_heatmap.png)
+![DiffBoroughsHeatmap](../../images/project1/diff_bug_heatmap.png)
 
 #### Observations and Insights
 
@@ -120,8 +120,3 @@ Approximately 90% of the trips were taken with the source and detination being i
 
 1. Driver utilization varies significantly, however it can be seen that the most common utlization rate hovers around 30% - 40%
 2. Most trips are not cross-boroughs, however trips Between Manhattan and Queens are the most taken cross-borough.
-
-
-
-## License
-This project is licensed under the [Apache License 2.0](LICENSE).
