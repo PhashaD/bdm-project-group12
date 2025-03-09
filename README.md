@@ -4,7 +4,7 @@
 
 Project [Big Data](https://courses.cs.ut.ee/2025/bdm/spring/Main/HomePage) is provided by [University of Tartu](https://courses.cs.ut.ee/).
 
-Students: **[To be added]**
+Students: **Phasha Davrishev, Alejandro Ballesteros Perez, Roman Krutsko, Nika Mgaloblishvili**
 
 ## Queries 
 

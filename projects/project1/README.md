@@ -4,7 +4,7 @@ Project 1 Analyzing New York City Taxi Data
 
 Project [Big Data](https://courses.cs.ut.ee/2025/bdm/spring/Main/HomePage) is provided by [University of Tartu](https://courses.cs.ut.ee/).
 
-Students: Alejandro Ballesteros Perez,  Phasha Davrishev. Roman Krutsko. Nika Mgaloblishvili
+Students: Alejandro Ballesteros Perez, Phasha Davrishev, Roman Krutsko, Nika Mgaloblishvili
 
 ## License
 This project is licensed under the [Apache License 2.0](LICENSE).
@@ -35,11 +35,11 @@ The dataset is processed using Apache Spark to efficiently handle large-scale da
 
 ### Query 1 | Utilization
 
-This query calculates each taxi’s utilization rate based on trip data. First, it identifies how much time each taxi spends idle by comparing each trip’s pickup time to the previous trip’s dropoff time (using a window function grouped by medallion). Any idle gap longer than four hours resets to zero (treated as a new session). The code then sums each taxi’s total busy time (duration) and idle time to compute:
+This query calculates each taxi’s utilization rate based on trip data. First, it identifies how much time each taxi spends idle by comparing each trip’s pickup time to the previous trip’s dropoff time (using a window function grouped by medallion). Any idle gap longer than four hours resets to zero (treated as a new session). The code then sums each taxi’s total busy time (duration) and idle time to compute utilization rate.
 
 Each taxi’s utilization rate is computed as:
 ```bash
-utilization_rate = busy_time_sum \ (text busy_time_sum + idle_time_sum)
+utilization_rate = busy_time_sum / (busy_time_sum + idle_time_sum)
 ```
 
 busy_time_sum: Total trip duration across all trips for a given taxi.
@@ -51,9 +51,21 @@ idle_time_sum: Total idle time below the 4-hour threshold.
 
 #### Observations and Insights
 
-Rising Utilization: There is a very small number of taxis whos utlization rate goes above 60% percent. Utilization rate average is around 30 to 40%.
+The majority of taxis have a utilization rate between 30% and 40%. Around 500 taxis have utilization rates close to 100%, however this is 
+due to the fact that they have a small number of trips present in the dataset.
 
 ### Query 2 - Average Wait Time for Next Fare
+This query calculates the average wait time for the next fare after a drop-off, categorized by borough. First, the `time_to_next_fare` is calculated as the difference between the drop-off time of the current trip and the pickup time of the next trip(`next_pickup_timestamp`). 
+
+The averages for each borough are calculated as:
+```bash
+avg_time_per_borough = (
+    a_taxi_df.groupBy("dropoff_borough")
+    .agg(avg("time_to_next_fare").alias("avg_time_to_next_fare"))
+)
+```
+
+
 #### Data
 
 From the dataset, we calculated the average wait time for next fare for each borough
@@ -72,6 +84,11 @@ After analysis of average wait time for next fare, it can be concluded that Manh
 ### Query 3 - Intra-Borough Trips
 
 From a dataset of 99,549 NYC taxi trips, we filtered for trips that both started and ended within the same borough. We counted these intra-borough trips. The resulting count is 87,477.
+
+The used query is:
+```bash
+same_borough_trips_df = filtered_taxi_df.filter(col("pickup_borough") == col("dropoff_borough"))
+```
 
 #### Data
 ![Intra-Borough Trips](/images/project1/intra-borough-trips.png)
