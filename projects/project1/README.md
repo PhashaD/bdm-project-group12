@@ -55,7 +55,19 @@ Rising Utilization: There is a very small number of taxis whos utlization rate g
 
 ### Query 2 - Average Wait Time for Next Fare
 #### Data
+
+From the dataset, we calculated the average wait time for next fare for each borough
+Here is detailed data that was received:
+*   Queens - 6368.42
+*   Brooklyn - 6554.84
+*   Manhattan - 2048.92
+*   Bronx - 4973.71
+*   Staten Island - 13935.0
+*   Outside of NYC (drop out borough) - 12206.93
+
 #### Observations and Insights
+
+After analysis of average wait time for next fare, it can be concluded that Manhattan has the lowest wait time of around 2048.92 seconds, second least time of wait is in Bronx, Queens and Brooklyn have almost identical data, while Staten Island which is the farthest borough from the city center has the longest wait time.
 
 ### Query 3 - Intra-Borough Trips
 
