@@ -10,8 +10,7 @@ Students: Alejandro Ballesteros Perez, Phasha Davrishev, Roman Krutsko, Nika Mga
 This project is licensed under the [Apache License 2.0](LICENSE).
 
 ## Introduction
-
-`Fill me`
+This report analyzes flight data in the USA, by representing the data as a graph. Each airport is represented as a vertex, and each flight is represented as an edge between two vertices. The goal is to analyze the graph structure and compute various statistics, such as in-degree, out-degree, triangle counts, centrality measures, and PageRank.
 
 ## Queries
 
@@ -42,7 +41,7 @@ degree_df = vertices.join(in_degree, on="id", how="left") \
 ```
 
 Triangle count is number of sets of three vertices, where each vertex is connected to the other two by edges,
-forming a cycle of length three. In case of my implementation
+forming a cycle of length three. In case of my implementation,
 the algorithm first normalizes the edges, collects neighbors for each vertex, joins these neighbor sets based on
 adjacent edges to find candidate vertex pairs, and then counts the number of intersections to determine the triangles
 each vertex is part of.
@@ -54,7 +53,7 @@ computing their intersections, that is why there is a difference in some counts.
 
 ### Query 2 | Total number of triangles in the graph
 
-To count total number of triangles in graph, we have to combine the results of oll airports using this formula:
+To count total number of triangles in graph, we have to combine the results of all airports using this formula:
 
 ```python
 total_triangles = triangle_counts.agg(F.sum("triangleCount").alias("total")).collect()[0]["total"]
@@ -63,3 +62,50 @@ total_triangles = triangle_counts.agg(F.sum("triangleCount").alias("total")).col
 As we can see, the result of total triangles from GraphFrames has to be divided by 3, as it accounted for three times
 when aggregating vertex counts. So comparing the total count of triangles calculated by our implementation and built-in
 GraphFrames `graph.triangleCount()`, we can see that count is same, which is `15991`.
+
+
+### Query 4  | PageRank
+This query calculates the PageRank of each vertex in the graph. PageRank mesures the importance of each vertex based on the number of vertices connected to it and the PageRank of those vertices. The formula used for PageRank calculation is:
+
+![PageRank Formula](../../images/project3/pageRankFormula.png)
+
+where d is the damping factor, which is set to 0.85 in our implementation. Damping factor represents a probability that a user will continue clicking on links, rather than starting a new random search. 
+PageRank is an iterative algorithm, and the number of iterations is set to 10 in our implementation. 
+
+In the implementation, PageRank of each vertex is initialized to 1.0. Afterwards, the contribution of each vertex to the PageRank of its neighbors is calculated, in the following way:
+
+```python
+(edges.join(ranks, edges.src == ranks.id)
+                     .join(out_degree, edges.src == out_degree.id) # get all the vertices and number of outgoing edges
+                     .select(
+                         edges.dst.alias("id"),
+                         (ranks["rank"] / out_degree["out_degree"]).alias("contrib") # contribution the destination vertex receives
+                     ))
+```
+as can be seen, the contribution each vertex gives to its neighbors is calculated by dividing its PageRank by the number of outgoing edges. 
+
+Then, the PageRank of each vertex is calculated by summing the contributions from all its neighbors and applying the damping factor:
+
+```python
+grouped_contributions = (contributions.groupBy("id")
+              .agg(F.sum("contrib").alias("sum_contrib"))
+              .select(
+                  col("id"),
+                  (((1 - damping) / N) + damping * col("sum_contrib")).alias("rank") # apply pagerank formula
+              ))
+```
+
+Given the fact that not all vertices may have received contributions, a rank of (1 - damping) / N is given to such vertices, where N is the number of vertices in the graph:
+```python
+dangling = vertices.join(grouped_contributions.select("id"), "id", "left_anti") \
+                       .withColumn("rank", F.lit((1 - damping) / N))
+```
+
+This process is repeated for 10 iterations, and the final PageRank of each vertex is obtained. The results are sorted in descending order to identify the most important vertices in the graph.
+```python
+ranks.orderBy("rank", ascending=False).show()
+```
+
+Afterwards the results are visualized using the networkx and matplotlib libraries. The vertices are represented as circles, and the size of each circle is proportional to the PageRank of the corresponding vertex. The graph is displayed using a spring_layout, which positions nodes using Fruchterman-Reingold force-directed algorithm
+
+![PageRank Graph](../../images/project3/pagerank.png)
