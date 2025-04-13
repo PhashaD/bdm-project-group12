@@ -203,34 +203,14 @@ Afterwards the results are visualized using the networkx and matplotlib librarie
 
 ### Query 5 | Finding the Most Connected Airports Using Direct Flight Routes
 
-To achieve this, the GraphFrame library in PySpark was used to represent the data, and the connectedComponents() method was employed to identify the connected components in the flight network.
+Each airport was initially assigned a unique label. In every iteration, each airport updated its label to the smallest label among its directly connected neighbors. This process was repeated until labels converged or reached a maximum iteration count. Airports that ended up with the same label belonged to the same connected component.
 
-The dataset provided contains flight information, including the origin and destination airports. The following preprocessing steps were taken:
+We then grouped the airports by label and selected the group with the highest number of members to identify the largest connected component in the flight network.
 
-Creating the edges: The edges were created by selecting the ORIGIN and DEST columns and ensuring that no self-loops (flights from an airport to itself) were included.
-```python
-edges = df_clean.select(col("ORIGIN").alias("src"), col("DEST").alias("dst")).distinct()
-```
+For validation, we used the built-in GraphFrames graph.connectedComponents() method. After comparing both approaches, we found that the label-based implementation and GraphFrames returned the same component size and members, confirming the correctness of our approach.
 
-Creating the vertices (airports): The vertices were created by selecting both the origin (src) and destination (dst) airports and combining them into a single distinct list of airports.
+The result is consistent, and the largest connected group of airports was successfully identified without relying on GraphFrames’ built-in connectedComponents() function.
 
-```python
-vertices = edges.select(col("src").alias("id"))
-                .union(edges.select(col("dst").alias("id")))
-                .distinct()
-```
-
-The GraphFrame API was used to represent the flight network as a graph, where airports are nodes, and flight routes are edges. The connectedComponents() method from the GraphFrame library was applied to find the connected components in the graph. Each airport was assigned a component ID, where airports with the same component ID are part of the same connected group.
-```python
-components = g.connectedComponents()
-```
-
-Once the connected components were identified, the component sizes were computed by counting the number of airports in each component. The largest connected component was selected by ordering the components based on their size.
-
-```python
-component_sizes = components.groupBy("component").count().orderBy(col("count").desc())
-largest_component_id = component_sizes.first()["component"]
-largest_group = components.filter(col("component") == largest_component_id)
 ```
 
 ### Visualization | Airport Connectivity Network
