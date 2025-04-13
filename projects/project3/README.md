@@ -82,9 +82,57 @@ In this implementation, we approximate the shortest-path distances by performing
 
 At the end of each BFS, we store (vertex_id, closeness_centrality) in a Spark DataFrame. The code below demonstrates this procedure.
 
-After computing the closeness centralities, we visualize them using two separate plots:
+#### Code
 
-### Graph 1
+For a given source vertex, we create a distance column, setting it to 0 for the source itself and leaving it undefined for others:
+
+```python
+visited = vertices.withColumn("distance", when(col("id") == source, lit(0)))
+frontier = visited.filter(col("id") == source)
+depth = 0
+```
+
+While our frontier (the set of newly discovered vertices at each depth) is not empty, we move outward by one edge:
+
+```python
+while frontier.count() > 0 and depth < max_depth:
+    next_frontier = (frontier.join(edges, frontier["id"] == edges["src"])
+                              .select(edges["dst"].alias("id"))
+                              .distinct())
+
+    next_frontier = (next_frontier.join(visited, "id", "left_anti")
+                                 .withColumn("distance", lit(depth + 1)))
+
+    visited = visited.union(next_frontier).distinct()
+    frontier = next_frontier
+    depth += 1
+```
+
+* We find all direct neighbors of the current frontier.
+* We ensure we only add newly found vertices (left_anti join on visited).
+* We increment each newly found vertex’s distance by one.
+
+After BFS completes for the source vertex, all reachable vertices have a defined distance. We filter out the source itself and any unreachable vertices:
+
+```python
+reachable = visited.filter((col("id") != source) & col("distance").isNotNull())
+reachable_count = reachable.count()
+```
+
+We then compute the sum of distances to those reachable vertices:
+
+```python
+if reachable_count > 0:
+    total_distance = reachable.agg({"distance": "sum"}).collect()[0][0]
+    avg_distance = total_distance / reachable_count
+    closeness = 1 / avg_distance if avg_distance > 0 else 0
+else:
+    closeness = 0
+```
+
+By repeating this BFS process for every vertex, we derive the closeness centrality across the entire graph. Higher closeness values indicate a vertex is “closer” on average to the rest of the graph, making it a more central hub in terms of network distance.
+
+#### Graph 1
 
 A bar chart showing (vertex_id, closeness_centrality) for a selected subset (top 20)
 
@@ -94,7 +142,7 @@ We see a few airports with closeness centrality around 0.70, indicating they can
 
 The rest of the top 20 are still relatively high (around 0.60 or above), suggesting these nodes are also quite central within the flight network.
 
-### Graph 2
+#### Graph 2
 
 A histogram displaying how closeness centralities are distributed across all nodes.
 
