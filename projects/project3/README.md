@@ -114,9 +114,9 @@ Afterwards the results are visualized using the networkx and matplotlib librarie
 
 To identify the most connected airports, we analyzed direct flight connections by treating each flight as a directed edge from ORIGIN to DEST. The goal was to compute how many unique airports each airport directly connects with (either as a departure or arrival point).
 
-1. Selected distinct (ORIGIN, DEST) pairs from the dataset.
-2. Created bidirectional edges by unifying both (ORIGIN → DEST) and (DEST → ORIGIN) to account for connections in both directions.
-3. Grouped by each airport and counted the number of distinct connected airports using countDistinct.
+1. Selected distinct `(ORIGIN, DEST)` pairs from the dataset.
+2. Created bidirectional edges by unifying both `(ORIGIN → DEST)` and `(DEST → ORIGIN)` to account for connections in both directions.
+3. Grouped by each airport and counted the number of distinct connected airports using `countDistinct`.
 4. Sorted the airports in descending order of connection counts.
 
 This provided a ranked list of airports based on the number of unique direct connections they have. These represent the most connected nodes in the flight network and could indicate hub airports.
@@ -135,15 +135,15 @@ This provided a ranked list of airports based on the number of unique direct con
 
 To visualize the network of airport connections, we exported the flight route data into a format compatible with NetworkX and used Matplotlib for visualization.
 
-1. Converted the unique (ORIGIN, DEST) pairs from PySpark into a list of edges.
+1. Converted the unique `(ORIGIN, DEST)` pairs from PySpark into a list of edges.
 
-2. Created a directed graph using networkx.DiGraph() and added the route edges.
+2. Created a directed graph using `networkx.DiGraph()` and added the route edges.
 
 3. Calculated node sizes based on degree to emphasize the most connected airports.
 
-4. Used spring_layout to lay out nodes in a visually pleasing manner.
+4. Used `spring_layout` to lay out nodes in a visually pleasing manner.
 
-5. Plotted nodes, edges, and labels with matplotlib.pyplot.
+5. Plotted nodes, edges, and labels with `matplotlib.pyplot`.
 
 The resulting graph illustrates how airports are interconnected across the network. Highly connected hubs appear with larger nodes, and the edges show direct flight paths. This helps to visually identify central nodes in the flight network and observe the structural flow of connectivity.
 
