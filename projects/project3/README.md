@@ -203,42 +203,46 @@ Afterwards the results are visualized using the networkx and matplotlib librarie
 
 ### Query 5 | Finding the Most Connected Airports Using Direct Flight Routes
 
-To identify the most connected airports, we analyzed direct flight connections by treating each flight as a directed edge from ORIGIN to DEST. The goal was to compute how many unique airports each airport directly connects with (either as a departure or arrival point).
+To achieve this, the GraphFrame library in PySpark was used to represent the data, and the connectedComponents() method was employed to identify the connected components in the flight network.
 
-1. Selected distinct `(ORIGIN, DEST)` pairs from the dataset.
-2. Created bidirectional edges by unifying both `(ORIGIN → DEST)` and `(DEST → ORIGIN)` to account for connections in both directions.
-3. Grouped by each airport and counted the number of distinct connected airports using `countDistinct`.
-4. Sorted the airports in descending order of connection counts.
+The dataset provided contains flight information, including the origin and destination airports. The following preprocessing steps were taken:
 
-This provided a ranked list of airports based on the number of unique direct connections they have. These represent the most connected nodes in the flight network and could indicate hub airports.
+Creating the edges: The edges were created by selecting the ORIGIN and DEST columns and ensuring that no self-loops (flights from an airport to itself) were included.
+```python
+edges = df_clean.select(col("ORIGIN").alias("src"), col("DEST").alias("dst")).distinct()
+```
 
-|airport|num_connections|
-|-------|---------------|
-|    ATL|            165|
-|    ORD|            141|
-|    DFW|            134|
-|    DTW|            124|
-|    MSP|            119|
-|    ...|            ...|
+Creating the vertices (airports): The vertices were created by selecting both the origin (src) and destination (dst) airports and combining them into a single distinct list of airports.
 
+```python
+vertices = edges.select(col("src").alias("id"))
+                .union(edges.select(col("dst").alias("id")))
+                .distinct()
+```
+
+The GraphFrame API was used to represent the flight network as a graph, where airports are nodes, and flight routes are edges. The connectedComponents() method from the GraphFrame library was applied to find the connected components in the graph. Each airport was assigned a component ID, where airports with the same component ID are part of the same connected group.
+```python
+components = g.connectedComponents()
+```
+
+Once the connected components were identified, the component sizes were computed by counting the number of airports in each component. The largest connected component was selected by ordering the components based on their size.
+
+```python
+component_sizes = components.groupBy("component").count().orderBy(col("count").desc())
+largest_component_id = component_sizes.first()["component"]
+largest_group = components.filter(col("component") == largest_component_id)
+```
 
 ### Visualization | Airport Connectivity Network
 
-To visualize the network of airport connections, we exported the flight route data into a format compatible with NetworkX and used Matplotlib for visualization.
+To visually represent the largest connected component, a graph was created using the NetworkX and matplotlib libraries, where:
 
-1. Converted the unique `(ORIGIN, DEST)` pairs from PySpark into a list of edges.
+ * Airports are represented as nodes.
+ * Flight routes are represented as edges.
 
-2. Created a directed graph using `networkx.DiGraph()` and added the route edges.
-
-3. Calculated node sizes based on degree to emphasize the most connected airports.
-
-4. Used `spring_layout` to lay out nodes in a visually pleasing manner.
-
-5. Plotted nodes, edges, and labels with `matplotlib.pyplot`.
-
-The resulting graph illustrates how airports are interconnected across the network. Highly connected hubs appear with larger nodes, and the edges show direct flight paths. This helps to visually identify central nodes in the flight network and observe the structural flow of connectivity.
+#### Conclusion:
+1. The implementation successfully identified the largest group of connected airports in the dataset using connected components.
+2. The results show a clear breakdown of the largest connected component, and a graph visualization provided an intuitive representation of the flight network.
 
 
-![Airport Connectivity](../../images/project3/connectivity_network.jpg)
-
-
+![Airport Connectivity](../../images/project3/largestConnectedAirports.png)
