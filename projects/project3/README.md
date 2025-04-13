@@ -211,7 +211,6 @@ For validation, we used the built-in GraphFrames graph.connectedComponents() met
 
 The result is consistent, and the largest connected group of airports was successfully identified without relying on GraphFrames’ built-in connectedComponents() function.
 
-```
 
 ### Visualization | Airport Connectivity Network
 
