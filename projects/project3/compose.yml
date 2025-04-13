@@ -11,5 +11,5 @@ services:
       - "./mnt/:/home/jovyan/" # map a local folder to the Jupyter workspace folder
       - "../.data/:/home/jovyan/input/" # map a local folder to the Jupyter workspace folder
     environment:
-      - SPARK_DRIVER_MEMORY=6g
-      - SPARK_EXECUTOR_MEMORY=6g
+      - SPARK_DRIVER_MEMORY=18g
+      - SPARK_EXECUTOR_MEMORY=18g

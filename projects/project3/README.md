@@ -63,6 +63,49 @@ As we can see, the result of total triangles from GraphFrames has to be divided 
 when aggregating vertex counts. So comparing the total count of triangles calculated by our implementation and built-in
 GraphFrames `graph.triangleCount()`, we can see that count is same, which is `15991`.
 
+### Query 3  | Closeness Centrality
+Closeness centrality measures how close each vertex is to all other vertices in the graph. Formally, for a vertex 𝑣v, its closeness centrality can be defined as the reciprocal of the average shortest-path distance from 𝑣v to all other reachable vertices:
+
+![PageRank Formula](../../images/project3/closenessFormula.png)
+
+Where 𝑑(𝑣,𝑢)d(v,u) is the shortest-path distance between 𝑣v and 𝑢u, and ∣𝑉∣∣V∣ is the total number of vertices in the graph.
+
+In this implementation, we approximate the shortest-path distances by performing a BFS-like traversal from each vertex up to a specified depth (max_depth). For each source vertex:
+
+1. Initialize the source with distance 0.
+
+2. Expand outward (frontier) one edge at a time, assigning distances 1,2,3,... to newly discovered vertices until all reachable vertices are visited or until max_depth is reached.
+
+3. Compute the sum of distances to all reachable vertices.
+
+4. The closeness centrality is then 1/avg_distance (or 0 if no vertices are reachable).
+
+At the end of each BFS, we store (vertex_id, closeness_centrality) in a Spark DataFrame. The code below demonstrates this procedure.
+
+After computing the closeness centralities, we visualize them using two separate plots:
+
+### Graph 1
+
+A bar chart showing (vertex_id, closeness_centrality) for a selected subset (top 20)
+
+![Top Closeness Centrality](../../images/project3/topCloseness.png)
+
+We see a few airports with closeness centrality around 0.70, indicating they can reach other airports very efficiently (in fewer hops).
+
+The rest of the top 20 are still relatively high (around 0.60 or above), suggesting these nodes are also quite central within the flight network.
+
+### Graph 2
+
+A histogram displaying how closeness centralities are distributed across all nodes.
+
+![Distribution of Closeness Centrality](../../images/project3/distributionCloseness.png)
+
+The majority of airports have closeness centralities in a cluster around 0.50–0.52, with only a handful reaching or exceeding 0.60.
+
+This distribution shows that while most airports are moderately well connected, only a small fraction are highly central. These tend to be major hubs that serve many routes, enabling shorter path distances to the rest of the network.
+
+The large bar near 0.50 indicates that many airports have average distances similar to one another, forming a “main cluster” of moderately central vertices.
+
 
 ### Query 4  | PageRank
 This query calculates the PageRank of each vertex in the graph. PageRank mesures the importance of each vertex based on the number of vertices connected to it and the PageRank of those vertices. The formula used for PageRank calculation is:
